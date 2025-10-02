@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>atung</title>
+  <style>
+    :root{--bg:#0b1020;--panel:#0f1726;--accent:#ff4da6;--muted:#9fb0c8}
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,Arial;background:linear-gradient(180deg,#071021 0%,#081226 50%,#071022 100%);color:#e6f0fb}
+    .wrap{height:100vh;display:grid;place-items:center;padding:24px}
+    .viewport{width:min(1100px,96%);height:min(720px,92vh);background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);border-radius:16px;overflow:hidden;position:relative;border:1px solid rgba(255,255,255,0.03);box-shadow:0 12px 40px rgba(2,6,23,0.6)}
+
+    /* slides */
+    .slides{height:100%;position:relative}
+    .slide{position:absolute;inset:0;padding:36px;display:flex;flex-direction:column;gap:18px;align-items:center;justify-content:center;transition:opacity .45s,transform .55s;backdrop-filter:blur(2px)}
+    .slide.hidden{opacity:0;pointer-events:none;transform:translateX(18px) scale(.995)}
+
+    .card{width:100%;max-width:860px;background:linear-gradient(180deg,rgba(255,255,255,0.015),rgba(255,255,255,0.008));padding:26px;border-radius:12px;border:1px solid rgba(255,255,255,0.02);text-align:center}
+    h1{margin:0;font-size:28px;color:var(--accent)}
+    p{margin:0;color:var(--muted);line-height:1.5}
+
+    .controls{display:flex;gap:12px;justify-content:center;margin-top:12px}
+    .btn{background:linear-gradient(90deg,var(--accent),#ff86c9);border:none;padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:700;color:#071127;box-shadow:0 8px 22px rgba(255,77,166,0.12);transition:transform .12s}
+    .btn:active{transform:scale(.98)}
+    .btn[aria-disabled="true"]{opacity:.5;cursor:not-allowed;transform:none}
+
+    .tiny{font-size:13px;color:#9db0c8}
+
+    /* sneaky moving button */
+    .runaway{position:relative;width:220px;height:48px}
+    .runaway button{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);}
+
+    /* fake modal */
+    .modal{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);background:#0b1220;border-radius:12px;padding:18px;border:1px solid rgba(255,255,255,0.03);box-shadow:0 10px 40px rgba(2,6,23,0.7);display:none;z-index:9999}
+    .modal.show{display:block}
+
+    /* silly countdown */
+    .big{font-size:64px;font-weight:800;letter-spacing:2px}
+
+    /* loading bar */
+    .loader{width:100%;height:16px;background:rgba(255,255,255,0.03);border-radius:8px;overflow:hidden}
+    .loader > i{display:block;height:100%;width:0;background:linear-gradient(90deg,#ffc371,#ff6bb5);border-radius:8px}
+
+    /* confetti */
+    .confetti{position:fixed;left:0;top:0;width:100%;height:100%;pointer-events:none}
+
+    /* silly visual */
+    .ascii{font-family:monospace;background:linear-gradient(90deg,rgba(255,255,255,0.02),transparent);padding:12px;border-radius:8px}
+
+    @media (max-width:640px){h1{font-size:20px}.card{padding:18px}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="viewport" role="application" aria-label="Troll Gabut untuk Fatur">
+      <div class="slides" id="slides">
+
+        <!-- Slide 0: Intro -->
+        <section class="slide" id="slide-0">
+          <div class="card">
+            <h1>p, info coding tur hahaa</h1>
+            <p class="tiny">yak klik <strong>Next</strong>.</p>
+            <div class="controls">
+              <button class="btn btn-next" onclick="next()">Next →</button>
+              <button class="btn" onclick="randomPopup()">bodo amat</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Slide 1: Run-away button -->
+        <section class="slide hidden" id="slide-1">
+          <div class="card">
+            <h1>yak Tangkap awokwok</h1>
+            <p class="tiny">Tombol "Lanjut" suka kabur. Coba</p>
+            <div class="runaway" id="run-wrap">
+              <button class="btn" id="run-btn">Lanjut</button>
+            </div>
+            <p class="tiny">(Tips: jangan klik karena itu cuma jebakan)</p>
+            <div class="controls">
+              <button class="btn btn-next" onclick="next()">Next →</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Slide 2: Fake verification -->
+        <section class="slide hidden" id="slide-2">
+          <div class="card">
+            <h1>Menghubungkan ke server... 0%</h1>
+            <p class="tiny">Memverifikasi identitas: "Fatur". Proses ini mungkin memakan waktu... sangat lama.</p>
+            <div class="loader" aria-hidden><i id="bar"></i></div>
+            <div class="controls">
+              <button class="btn" onclick="speedUp()">Percepat</button>
+              <button class="btn btn-next" onclick="next()">Next →</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Slide 3: Eternal wait -->
+        <section class="slide hidden" id="slide-3">
+          <div class="card">
+            <h1>Selamat! Akunmu terkena hack</h1>
+            <p class="tiny">hentikan <span id="years">99,999</span> tahun.</p>
+            <div class="controls">
+              <button class="btn" onclick="fakeClaim()">Klaim sekarang</button>
+              <button class="btn btn-next" onclick="next()">Next →</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Slide 4: Silly modal spam -->
+        <section class="slide hidden" id="slide-4">
+          <div class="card">
+            <h1>Dialog Surprise</h1>
+            <p class="tiny">Klik tombol di bawah untuk melihat beberapa pesan rahasia (atau jebakan).</p>
+            <div class="controls">
+              <button class="btn" onclick="spamModals()">Buka Kotak</button>
+              <button class="btn btn-next" onclick="next()">Next →</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Slide 5: ASCII Art + Keyboard prank -->
+        <section class="slide hidden" id="slide-5">
+          <div class="card">
+            <h1>Fitur Keren: Keyboard Mode</h1>
+            <p class="tiny">Tekan tombol apapun — setiap huruf akan berubah jadi kata random!</p>
+            <div class="ascii" id="ascii">Tekan apa saja...</div>
+            <div class="controls">
+              <button class="btn btn-next" onclick="next()">Next →</button>
+              <button class="btn" onclick="resetAll()">Reset</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Slide 6: Final cheeky message -->
+        <section class="slide hidden" id="slide-6">
+          <div class="card">
+            <h1>info</h1>
+            <p class="tiny" id="final-msg">gabut bet awkaokwo</p>
+            <div class="controls">
+              <button class="btn" onclick="surpriseFinal()">Tunjukkan Surprise</button>
+              <button class="btn" onclick="resetAll()">Ulangi</button>
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- fake modal container -->
+      <div class="modal" id="modal"></div>
+
+      <!-- confetti layer -->
+      <canvas class="confetti" id="confetti"></canvas>
+
+    </div>
+  </div>
+
+  <script>
+    // --- Slide controller ---
+    const slides = Array.from(document.querySelectorAll('.slide'));
+    let current = 0;
+
+    function show(i){
+      // clamp to valid range
+      const idx = Math.max(0, Math.min(i, slides.length - 1));
+      slides.forEach((s,idx2)=> s.classList.toggle('hidden', idx2!==idx));
+      current = idx;
+      updateNextButtons();
+    }
+
+    function next(){ 
+      // do nothing if already at last slide
+      if(current >= slides.length - 1) return;
+      show(current + 1);
+    }
+    function prev(){ show(Math.max(0,current-1)); }
+    show(0);
+
+    function updateNextButtons(){
+      const nextBtns = Array.from(document.querySelectorAll('.btn-next'));
+      if(current === slides.length - 1){
+        // we're at final slide: disable all Next buttons
+        nextBtns.forEach(b=>{
+          b.setAttribute('aria-disabled','true');
+          b.textContent = 'Selesai';
+        });
+      } else {
+        nextBtns.forEach(b=>{
+          b.removeAttribute('aria-disabled');
+          // restore label (use arrow on desktop)
+          b.textContent = 'Next →';
+        });
+      }
+    }
+
+    // --- Runaway button logic (Slide 1) ---
+    const runBtn = document.getElementById('run-btn');
+    const runWrap = document.getElementById('run-wrap');
+    let runaways = 0;
+    if(runBtn){
+      runBtn.addEventListener('mouseenter', ()=>{
+        if(runaways < 12){
+          const wrapRect = runWrap.getBoundingClientRect();
+          const x = Math.random()*(wrapRect.width-120);
+          const y = Math.random()*(wrapRect.height-12)-12;
+          runBtn.style.transform = `translate(${x - wrapRect.width/2 + 110}px, ${y}px)`;
+          runaways++;
+        } else {
+          runBtn.textContent = 'Oke, boleh klik';
+        }
+      });
+      runBtn.addEventListener('click', ()=> next());
+    }
+
+    // --- Fake loader (Slide 2) ---
+    const bar = document.getElementById('bar');
+    let progress = 0;
+    let loaderInterval;
+    function startFakeLoad(){
+      clearInterval(loaderInterval);
+      loaderInterval = setInterval(()=>{
+        // intentionally slow and random
+        progress += Math.random()*3;
+        bar.style.width = Math.min(progress,100)+'%';
+        const h = document.querySelector('#slide-2 h1');
+        if(h) h.textContent = `Menghubungkan ke server... ${Math.floor(progress)}%`;
+        if(progress >= 100){
+          clearInterval(loaderInterval);
+          setTimeout(()=>{
+            // move to next only if not at last slide
+            if(current < slides.length - 1) next();
+            progress = 0; bar.style.width='0%';
+          },600);
+        }
+      }, 400 + Math.random()*800);
+    }
+    // start when slide visible
+    const slide2 = document.getElementById('slide-2');
+    const obs2 = new MutationObserver(()=>{
+      if(!slide2.classList.contains('hidden')){
+        startFakeLoad();
+      } else {
+        clearInterval(loaderInterval);
+      }
+    });
+    obs2.observe(slide2,{attributes:true,attributeFilter:['class']});
+
+    function speedUp(){
+      // small cheat: finish loader faster
+      progress = 92;
+    }
+
+    // --- Fake long years claim (Slide 3) ---
+    function fakeClaim(){
+      const yearsEl = document.getElementById('years');
+      let years = 99999;
+      const id = setInterval(()=>{
+        years -= Math.floor(Math.random()*37);
+        if(years <= 0){
+          years = 0; yearsEl.textContent = '0'; clearInterval(id); spawnConfetti();
+        } else {
+          yearsEl.textContent = years.toLocaleString();
+        }
+      },200);
+    }
+
+    // --- Spam modals (Slide 4) ---
+    const modal = document.getElementById('modal');
+    function randomPopup(){
+      modal.classList.add('show');
+      modal.innerHTML = `<h3>PERINGATAN</h3><p>Menjalankan prosedur rahasia...</p><div style="margin-top:12px"><button class='btn' onclick='modalClose()'>Tutup</button></div>`;
+      setTimeout(()=> modalClose(), 2200);
+    }
+    function spamModals(){
+      let count = 0;
+      const t = setInterval(()=>{
+        const m = document.createElement('div');
+        m.className = 'modal show';
+        m.style.left = Math.random()*70 + '%';
+        m.style.top = Math.random()*70 + '%';
+        m.style.transform = 'translate(0,0)';
+        m.innerHTML = `<strong>Pesan Rahasia #${count+1}</strong><p>Fatur, kamu disukai oleh 0 orang. Just kidding.</p><div style="margin-top:8px"><button class='btn' onclick='this.closest(\".modal\").remove()'>OK</button></div>`;
+        document.body.appendChild(m);
+        count++;
+        if(count>6) clearInterval(t);
+      },260);
+    }
+    function modalClose(){ modal.classList.remove('show'); modal.innerHTML=''; }
+
+    // --- Keyboard prank (Slide 5) ---
+    const ascii = document.getElementById('ascii');
+    const wordPool = ['gabut','ngopi','ktondu','lapar','tedung','atung','wkwk','eh','loh','duh','sip','yoi','pole'];
+    window.addEventListener('keydown', (e)=>{
+      if(current === 5){
+        const pick = wordPool[Math.floor(Math.random()*wordPool.length)];
+        ascii.textContent += ' ' + pick;
+        // keep it from going infinite long
+        if(ascii.textContent.length > 400) ascii.textContent = ascii.textContent.slice(-380);
+      }
+    });
+
+    // --- Final surprise ---
+    function surpriseFinal(){
+      const fm = document.getElementById('final-msg');
+      fm.textContent = 'Loading hadiah...';
+      setTimeout(()=>{
+        fm.textContent = 'tamat hahaa';
+        console.log('%atung, riah meme gabut: (づ｡◕‿‿◕｡)づ', 'font-size:14px;color:magenta');
+        spawnConfetti();
+      },900);
+    }
+
+    // --- Confetti (canvas) ---
+    const confettiCanvas = document.getElementById('confetti');
+    const ctx = confettiCanvas.getContext('2d');
+    function setSize(){ confettiCanvas.width = innerWidth; confettiCanvas.height = innerHeight; }
+    setSize(); window.addEventListener('resize', setSize);
+    function spawnConfetti(){
+      const pieces = [];
+      for(let i=0;i<120;i++){
+        pieces.push({x:Math.random()*confettiCanvas.width,y:Math.random()*confettiCanvas.height/3,vy:2+Math.random()*6,ax:(Math.random()-0.5)*0.06,angle:Math.random()*360,w:6+Math.random()*10,color:`hsl(${Math.random()*360} 80% 60%)`});
+      }
+      let t=0;
+      function frame(){
+        ctx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height);
+        pieces.forEach(p=>{
+          p.x += Math.sin(t*0.05 + p.angle)*0.8 + p.ax*10;
+          p.y += p.vy;
+          p.angle += 0.1;
+          ctx.fillStyle = p.color;
+          ctx.fillRect(p.x, p.y, p.w, p.w*1.4);
+        });
+        t++;
+        if(t<180) requestAnimationFrame(frame); else ctx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height);
+      }
+      frame();
+    }
+
+    // --- Reset everything ---
+    function resetAll(){
+      // reset slides
+      show(0);
+      // reset runaway
+      if(runBtn){
+        runBtn.style.transform='translate(-50%,-50%)'; runaways = 0; runBtn.textContent='Lanjut';
+      }
+      // reset ascii
+      if(ascii) ascii.textContent='Tekan apa saja...';
+      // clear modals
+      document.querySelectorAll('.modal').forEach(m=>{ if(m!==modal) m.remove(); });
+      modalClose();
+      // clear console note
+      console.clear();
+      // reset loader
+      progress = 0; if(bar) bar.style.width='0%';
+    }
+
+    // allow keyboard nav
+    window.addEventListener('keydown', (e)=>{
+      if(e.key === 'ArrowRight') next();
+      if(e.key === 'ArrowLeft') prev();
+    });
+
+    // bonus: small prank change on intro after awhile
+    setTimeout(()=>{
+      const p = document.querySelector('#slide-0 .tiny');
+      if(p) p.textContent = 'Klik Next — atau jangan. (Disclaimer: ini prank)';
+    },18000);
+
+  </script>
+</body>
+</html>
